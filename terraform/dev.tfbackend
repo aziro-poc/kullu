@@ -1,0 +1,11 @@
+bucket         = "kullu-eks-tf-state"
+key            = "eks/dev/terraform.tfstate"
+region         = "eu-north-1"
+#dynamodb_table = "kullu-eks-tf-lock"
+use_lockfile   = true
+encrypt        = true
+skip_region_validation    = true
+skip_credentials_validation = true
+skip_metadata_api_check   = true
+skip_requesting_account_id = true
+insecure = true
