@@ -1,0 +1,101 @@
+pipeline {
+    agent any
+
+    environment {
+        // General
+        DOCKER_IMAGE = "configs-app"
+        IMAGE_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+
+        // Dev/Nexus
+        DEV_NEXUS_REPO = "nexus.example.com:8083/docker-dev"
+        NEXUS_USERNAME = credentials('nexus-username')
+        NEXUS_PASSWORD = credentials('nexus-password')
+
+        // AWS ECR (Master)
+        AWS_ACCOUNT_ID = '123456789012'
+        AWS_REGION = 'us-east-1'
+        ECR_REPO = 'configs-app'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Go App') {
+            steps {
+                sh '''
+                echo "Building Go application..."
+                go mod tidy
+                go build -o app .
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                echo "Building Docker image..."
+                docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'master') {
+                        echo "Branch is master: Pushing to AWS ECR"
+                        sh '''
+                        echo "Logging into AWS ECR..."
+                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+                        echo "Tagging image for ECR..."
+                        docker tag ${DOCKER_IMAGE}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+
+                        echo "Pushing image to ECR..."
+                        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+                        '''
+                    } else {
+                        echo "Non-master branch: Pushing to Nexus Dev Repo"
+                        sh '''
+                        echo "Logging into Nexus..."
+                        echo ${NEXUS_PASSWORD} | docker login -u ${NEXUS_USERNAME} --password-stdin ${DEV_NEXUS_REPO}
+
+                        echo "Tagging image for Nexus..."
+                        docker tag ${DOCKER_IMAGE}:${IMAGE_TAG} ${DEV_NEXUS_REPO}/${DOCKER_IMAGE}:${IMAGE_TAG}
+
+                        echo "Pushing image to Nexus..."
+                        docker push ${DEV_NEXUS_REPO}/${DOCKER_IMAGE}:${IMAGE_TAG}
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Cleanup Local Docker Images') {
+            steps {
+                sh '''
+                echo "Cleaning up local Docker images..."
+                docker rmi ${DOCKER_IMAGE}:${IMAGE_TAG} || true
+                if [ "${BRANCH_NAME}" == "master" ]; then
+                    docker rmi ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG} || true
+                else
+                    docker rmi ${DEV_NEXUS_REPO}/${DOCKER_IMAGE}:${IMAGE_TAG} || true
+                fi
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline for branch ${env.BRANCH_NAME} completed successfully!"
+        }
+        failure {
+            echo "Pipeline for branch ${env.BRANCH_NAME} failed!"
+        }
+    }
+}
