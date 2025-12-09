@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+data:
+  DATABASE_HOST: pg-postgres
+  DATABASE_PORT: "5432"
+  DATABASE_USER: admin
+  DATABASE_PASSWORD: admin123
+  DATABASE_NAME: configs
+  DATABASE_URL: "postgres://admin:admin123@pg-postgres:5432/configs?sslmode=disable"

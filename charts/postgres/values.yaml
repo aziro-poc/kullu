@@ -1,0 +1,27 @@
+postgresql:
+  port: 5432
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+env:
+  - name: POSTGRES_USER
+    valueFrom:
+      configMapKeyRef:
+        name: db-config
+        key: DATABASE_USER
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      configMapKeyRef:
+        name: db-config
+        key: DATABASE_PASSWORD
+  - name: POSTGRES_DB
+    valueFrom:
+      configMapKeyRef:
+        name: db-config
+        key: DATABASE_NAME

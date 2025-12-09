@@ -20,21 +20,33 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.port }}
-
+          env:
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- end }}
+              {{- if .valueFrom }}
+              valueFrom:
+                {{- if .valueFrom.configMapKeyRef }}
+                configMapKeyRef:
+                  name: {{ .valueFrom.configMapKeyRef.name }}
+                  key: {{ .valueFrom.configMapKeyRef.key }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
           livenessProbe:
             httpGet:
               path: {{ .Values.livenessProbe.path }}
               port: {{ .Values.livenessProbe.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
-
           readinessProbe:
             httpGet:
               path: {{ .Values.readinessProbe.path }}
               port: {{ .Values.readinessProbe.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
-
           resources:
             limits:
               cpu: {{ .Values.resources.limits.cpu }}
