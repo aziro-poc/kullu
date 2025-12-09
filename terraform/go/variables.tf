@@ -1,5 +1,6 @@
 variable "db_host" {
   type        = string
+  default     = "localhost"
   description = "Postgres host"
 }
 
@@ -10,10 +11,12 @@ variable "db_port" {
 
 variable "db_username" {
   type        = string
+  default     = "admin"
 }
 
 variable "db_password" {
   type        = string
+  default     = "admin123"
   sensitive   = true
 }
 
