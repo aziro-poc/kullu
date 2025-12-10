@@ -58,7 +58,8 @@ pipeline {
                 echo "${NEXUS_CREDS_PSW}" | docker login ${NEXUS_URL} -u "${NEXUS_CREDS_USR}" --password-stdin
     
                 echo "Pushing to Nexus..."
-                docker push ${DOCKER_IMAGE}
+                docker push --tls-verify=false ${DOCKER_IMAGE}
+                // docker push ${DOCKER_IMAGE}
             """
         }
     }
