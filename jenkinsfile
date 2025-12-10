@@ -9,14 +9,14 @@ pipeline {
         APP_NAME = "go-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
 
-        // Nexus Docker registry URL
-        NEXUS_URL = "http://10.60.240.195:8081"
+        // Nexus Docker registry host (no http://)
+        NEXUS_HOST = "10.60.240.195:8081"
 
-        // Nexus docker hosted repo (repository name)
+        // Nexus docker hosted repo
         NEXUS_REPO = "docker-releases"
 
-        // Full image path
-        DOCKER_IMAGE = "${NEXUS_URL}/repository/${NEXUS_REPO}/${APP_NAME}:${IMAGE_TAG}"
+        // Full Docker image path (valid format)
+        DOCKER_IMAGE = "${NEXUS_HOST}/${NEXUS_REPO}/${APP_NAME}:${IMAGE_TAG}"
     }
 
     stages {
@@ -56,9 +56,9 @@ pipeline {
             steps {
                 sh """
                     echo "Logging into Nexus..."
-                    echo "${NEXUS_PASSWORD}" | docker login ${NEXUS_URL} -u "${NEXUS_USER}" --password-stdin
+                    echo "${NEXUS_PASSWORD}" | docker login ${NEXUS_HOST} -u "${NEXUS_USER}" --password-stdin
 
-                    echo "Pushing to Nexus..."
+                    echo "Pushing Docker Image..."
                     docker push ${DOCKER_IMAGE}
                 """
             }
@@ -69,7 +69,7 @@ pipeline {
                 sh """
                     echo "Deploying using Helm..."
                     helm upgrade --install ${APP_NAME} ./charts/go-app-chart \
-                        --set image.repository=${NEXUS_URL}/repository/${NEXUS_REPO}/${APP_NAME} \
+                        --set image.repository=${NEXUS_HOST}/${NEXUS_REPO}/${APP_NAME} \
                         --set image.tag=${IMAGE_TAG}
                 """
             }
