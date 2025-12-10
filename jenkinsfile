@@ -25,7 +25,9 @@ pipeline {
         }
         stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'master', 
+                url: 'https://github.com/aziro-poc/kullu.git', 
+                credentialsId: 'github'
                 echo "Code checked out successfully."
             }
         }
