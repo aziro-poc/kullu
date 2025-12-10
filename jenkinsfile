@@ -46,25 +46,25 @@ pipeline {
         }
 
         stage('Push to Docker Hub') {
-            steps {
-                bat """
-                    echo "Logging into Docker Hub..."
-                    docker login -u %DOCKER_HUB_CREDS_USR% -p %DOCKER_HUB_CREDS_PSW%
-
-                    echo "Pushing Docker image to Docker Hub..."
-                    docker push $DOCKER_IMAGE
-                """
-            }
+        steps {
+            bat """
+                echo "Logging into Docker Hub..."
+                echo %DOCKER_HUB_CREDS_PSW% | docker login -u %DOCKER_HUB_CREDS_USR% --password-stdin
+    
+                echo "Pushing Docker image to Docker Hub..."
+                docker push ${DOCKER_IMAGE}
+            """
         }
+    }
 
         stage('Deploy Using Helm') {
             steps {
                 bat """
-                    echo "Deploying using Helm..."
-                    export KUBECONFIG=/var/jenkins_home/.kube/config
-                    helm upgrade --install ${APP_NAME} ./charts/go-app-chart \
-                        --set image.repository=${DOCKER_HUB_CREDS_USR}/${APP_NAME} \
-                        --set image.tag=${IMAGE_TAG}
+                    echo Deploying using Helm...
+                    set KUBECONFIG=C:\\jenkins_home\\.kube\\config
+                    helm upgrade --install %APP_NAME% charts\\go-app-chart ^
+                        --set image.repository=%DOCKER_HUB_CREDS_USR%/%APP_NAME% ^
+                        --set image.tag=%IMAGE_TAG%
                 """
             }
         }
