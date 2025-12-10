@@ -39,12 +39,38 @@ pipeline {
             }
         }
 
+        stage('Install Docker') {
+            steps {
+                sh '''
+                    echo "Installing Docker..."
+                    # Update package info
+                    sudo apt-get update -y
+
+                    # Install prerequisites
+                    sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+
+                    # Add Docker GPG key
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+                    # Add Docker repository
+                    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+                    # Install Docker
+                    sudo apt-get update -y
+                    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+                    # Add jenkins user to docker group
+                    sudo usermod -aG docker $USER
+                '''
+            }
+        }
+
         stage('Docker Build') {
             steps {
-                sh """
+                sh '''
                     echo "Building Docker Image..."
                     docker build -t ${DOCKER_IMAGE} .
-                """
+                '''
             }
         }
 
@@ -54,24 +80,24 @@ pipeline {
                 NEXUS_PASSWORD = credentials('nexus-password')
             }
             steps {
-                sh """
+                sh '''
                     echo "Logging into Nexus..."
                     echo "${NEXUS_PASSWORD}" | docker login ${NEXUS_URL} -u "${NEXUS_USER}" --password-stdin
 
-                    echo "Pushing to Nexus..."
+                    echo "Pushing Docker Image..."
                     docker push ${DOCKER_IMAGE}
-                """
+                '''
             }
         }
 
         stage('Deploy Using Helm') {
             steps {
-                sh """
+                sh '''
                     echo "Deploying using Helm..."
                     helm upgrade --install ${APP_NAME} ./charts/go-app-chart \
                         --set image.repository=${NEXUS_URL}/repository/${NEXUS_REPO}/${APP_NAME} \
                         --set image.tag=${IMAGE_TAG}
-                """
+                '''
             }
         }
     }
