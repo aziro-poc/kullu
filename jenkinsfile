@@ -62,7 +62,7 @@ pipeline {
             steps {
                 bat """
                     echo Deploying using Helm...
-                    set KUBECONFIG=C:\\jenkins_home\\.kube\\config
+                    set KUBECONFIG=C:\\Users\\muskan.bagwan\\.kube\\config
                     helm upgrade --install %APP_NAME% charts\\go-app-chart ^
                         --set image.repository=%DOCKER_HUB_CREDS_USR%/%APP_NAME% ^
                         --set image.tag=%IMAGE_TAG%
