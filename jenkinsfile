@@ -3,6 +3,7 @@ pipeline {
     
     tools {
         go 'go'
+        git 'Default'
     }
 
     environment {
