@@ -103,17 +103,17 @@ kubectl get svc
 
 Jenkins is used for CI/CD and is currently running locally.
 The pipeline performs the following steps:
-Code Checkout
-Go Build
-Docker Image Build
-Push Docker Image to Docker Hub
-Deploy to Kubernetes
-Helm Charts
-Helm charts are created for each application (go-app & postgres).
-Each chart contains its own deployment.yml and configuration files.
-ConfigMaps are used to store sensitive data without exposing it in code.
-Future plans include using AWS Secrets Manager.
-Helm allows rollback and version tracking using helm upgrade and rollouts.
+1. Code Checkout
+2. Go Build
+3. Docker Image Build
+4. Push Docker Image to Docker Hub
+5. Deploy to Kubernetes
+6. Helm Charts
+7. Helm charts are created for each application (go-app & postgres).
+8. Each chart contains its own deployment.yml and configuration files.
+9. ConfigMaps are used to store sensitive data without exposing it in code.
+10. Future plans include using AWS Secrets Manager.
+11. Helm allows rollback and version tracking using helm upgrade and rollouts.
 
 ## Database
 
