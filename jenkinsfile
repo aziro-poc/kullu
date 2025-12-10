@@ -39,7 +39,7 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh """
+                bat """
                     echo "Building Docker Image..."
                     docker build -t ${DOCKER_IMAGE} -f application/Dockerfile application
                 """
@@ -48,19 +48,19 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                sh '''
+                bat """
                     echo "Logging into Docker Hub..."
                     echo "$DOCKER_HUB_CREDS_PSW" | docker login -u "$DOCKER_HUB_CREDS_USR" --password-stdin
 
                     echo "Pushing Docker image to Docker Hub..."
                     docker push $DOCKER_IMAGE
-                '''
+                """
             }
         }
 
         stage('Deploy Using Helm') {
             steps {
-                sh """
+                bat """
                     echo "Deploying using Helm..."
                     export KUBECONFIG=/var/jenkins_home/.kube/config
                     helm upgrade --install ${APP_NAME} ./charts/go-app-chart \
