@@ -20,7 +20,9 @@ pipeline {
     }
 
     stages {
-
+        options {
+            wipeWorkspace()
+        }
         stage('Checkout Code') {
             steps {
                 checkout scm
