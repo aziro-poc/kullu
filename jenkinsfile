@@ -1,14 +1,26 @@
 pipeline {
-    agent {
-        docker(
-            image: 'golang:1.25',
-            args: '-v /var/run/docker.sock:/var/run/docker.sock'
-        )
+    agent any
+    
+    tools {
+        go 'go'
     }
 
-    tools { go 'go' }
+    environment {
+        APP_NAME = "go-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+
+        // Nexus Docker registry URL
+        NEXUS_URL = "http://10.60.240.195:8081"
+
+        // Nexus docker hosted repo (repository name)
+        NEXUS_REPO = "docker-releases"
+
+        // Full image path
+        DOCKER_IMAGE = "${NEXUS_URL}/repository/${NEXUS_REPO}/${APP_NAME}:${IMAGE_TAG}"
+    }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -29,10 +41,10 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh '''
+                sh """
                     echo "Building Docker Image..."
                     docker build -t ${DOCKER_IMAGE} .
-                '''
+                """
             }
         }
 
@@ -42,24 +54,24 @@ pipeline {
                 NEXUS_PASSWORD = credentials('nexus-password')
             }
             steps {
-                sh '''
+                sh """
                     echo "Logging into Nexus..."
                     echo "${NEXUS_PASSWORD}" | docker login ${NEXUS_URL} -u "${NEXUS_USER}" --password-stdin
 
-                    echo "Pushing Docker Image..."
+                    echo "Pushing to Nexus..."
                     docker push ${DOCKER_IMAGE}
-                '''
+                """
             }
         }
 
         stage('Deploy Using Helm') {
             steps {
-                sh '''
+                sh """
                     echo "Deploying using Helm..."
                     helm upgrade --install ${APP_NAME} ./charts/go-app-chart \
                         --set image.repository=${NEXUS_URL}/repository/${NEXUS_REPO}/${APP_NAME} \
                         --set image.tag=${IMAGE_TAG}
-                '''
+                """
             }
         }
     }
