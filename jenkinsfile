@@ -56,7 +56,7 @@ pipeline {
             steps {
                 sh """
                     echo "Logging into Nexus..."
-                    echo "${NEXUS_PASSWORD}" | docker login ${NEXUS_URL} -u "${NEXUS_USER}" --password-stdin
+                    echo "admin123" | docker login ${NEXUS_URL} -u "admin" --password-stdin
 
                     echo "Pushing to Nexus..."
                     docker push ${DOCKER_IMAGE}
