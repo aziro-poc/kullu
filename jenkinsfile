@@ -28,12 +28,12 @@ pipeline {
 
         stage('Go Build') {
             steps {
-                sh '''
+                bat """
                     echo "Building Go application..."
                     cd application
                     go mod tidy
                     go build -o go_app .
-                '''
+                """
             }
         }
 
