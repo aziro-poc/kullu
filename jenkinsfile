@@ -62,6 +62,7 @@ pipeline {
             steps {
                 sh """
                     echo "Deploying using Helm..."
+                    export KUBECONFIG=/var/jenkins_home/.kube/config
                     helm upgrade --install ${APP_NAME} ./charts/go-app-chart \
                         --set image.repository=${DOCKER_HUB_CREDS_USR}/${APP_NAME} \
                         --set image.tag=${IMAGE_TAG}
