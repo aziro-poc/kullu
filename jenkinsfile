@@ -49,20 +49,19 @@ pipeline {
         }
 
         stage('Push to Nexus Docker Registry') {
-            environment {
-                NEXUS_USER = credentials('nexus-username')
-                NEXUS_PASSWORD = credentials('nexus-password')
-            }
-            steps {
-                sh """
-                    echo "Logging into Nexus..."
-                    echo "admin123" | docker login ${NEXUS_URL} -u "admin" --password-stdin
-
-                    echo "Pushing to Nexus..."
-                    docker push ${DOCKER_IMAGE}
-                """
-            }
+        environment {
+            NEXUS_CREDS = credentials('nexus-creds') // single ID for both username/password
         }
+        steps {
+            sh """
+                echo "Logging into Nexus..."
+                echo "${NEXUS_CREDS_PSW}" | docker login ${NEXUS_URL} -u "${NEXUS_CREDS_USR}" --password-stdin
+    
+                echo "Pushing to Nexus..."
+                docker push ${DOCKER_IMAGE}
+            """
+        }
+    }
 
         stage('Deploy Using Helm') {
             steps {
