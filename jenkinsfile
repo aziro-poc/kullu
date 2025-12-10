@@ -1,25 +1,14 @@
 pipeline {
     agent {
-        docker { image 'golang:1.25' args '-v /var/run/docker.sock:/var/run/docker.sock' }
+        docker(
+            image: 'golang:1.25',
+            args: '-v /var/run/docker.sock:/var/run/docker.sock'
+        )
     }
-    
 
-    environment {
-        APP_NAME = "go-app"
-        IMAGE_TAG = "${BUILD_NUMBER}"
-
-        // Nexus Docker registry URL
-        NEXUS_URL = "http://10.60.240.195:8081"
-
-        // Nexus docker hosted repo (repository name)
-        NEXUS_REPO = "docker-releases"
-
-        // Full image path
-        DOCKER_IMAGE = "${NEXUS_URL}/repository/${NEXUS_REPO}/${APP_NAME}:${IMAGE_TAG}"
-    }
+    tools { go 'go' }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 checkout scm
