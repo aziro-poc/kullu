@@ -22,9 +22,11 @@ spec:
               mountPath: /var/jenkins_home
             - name: dockersock
               mountPath: /var/run/docker.sock
+          securityContext:
+            privileged: true  # Required if you want Docker builds to run inside container
       volumes:
         - name: jenkins-home
-          emptyDir: {}
+          emptyDir: {} # Use PersistentVolumeClaim in production
         - name: dockersock
           hostPath:
             path: /var/run/docker.sock
@@ -37,6 +39,7 @@ spec:
   type: NodePort
   ports:
     - port: 8080
+      targetPort: 8080
       nodePort: 32000
   selector:
     app: jenkins

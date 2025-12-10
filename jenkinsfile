@@ -21,9 +21,6 @@ pipeline {
     }
 
     stages {
-        options {
-            wipeWorkspace()
-        }
         stage('Checkout Code') {
             steps {
                 git branch: 'master', 
