@@ -52,17 +52,18 @@ pipeline {
 
         stage('Push to Nexus Docker Registry') {
         environment {
-            NEXUS_CREDS = credentials('nexus-creds') // single ID for both username/password
+            NEXUS_CREDS = credentials('nexus-creds')
+            DOCKER_REGISTRY = "10.60.240.195:8081"
+            DOCKER_IMAGE = "${DOCKER_REGISTRY}/repository/${NEXUS_REPO}/${APP_NAME}:${IMAGE_TAG}"
         }
         steps {
-            sh """
+            sh '''
                 echo "Logging into Nexus..."
-                echo "${NEXUS_CREDS_PSW}" | docker login ${NEXUS_URL} -u "${NEXUS_CREDS_USR}" --password-stdin
+                echo "$NEXUS_CREDS_PSW" | docker login $DOCKER_REGISTRY -u "$NEXUS_CREDS_USR" --password-stdin
     
                 echo "Pushing to Nexus..."
-                docker push --tls-verify=false ${DOCKER_IMAGE}
-                // docker push ${DOCKER_IMAGE}
-            """
+                docker push --tls-verify=false $DOCKER_IMAGE
+            '''
         }
     }
 
