@@ -29,6 +29,7 @@ pipeline {
                 sh '''
                     echo "Building Go application..."
                     cd application
+                    choco install go -y
                     go mod tidy
                     go build -o go_app .
                 '''
